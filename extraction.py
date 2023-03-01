@@ -143,6 +143,7 @@ if __name__ == "__main__":
             print("2. Reject")
             print("3. Edit")
             print("4. Skip")
+            print("5, Exit")
             option = input()
             if option == "1":
                 db._confirm(user._name)
@@ -169,3 +170,11 @@ if __name__ == "__main__":
                 
             elif option == "4":
                 pass
+            
+            elif option == "5":
+                print("Exiting...")
+                print("Saving...")
+                print("Bye :)")
+                break
+        
+        db.load_to_csv()
