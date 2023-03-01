@@ -137,7 +137,7 @@ if __name__ == "__main__":
 
     elif sys.argv[1] == "edit":
         db.load_from_csv(sys.argv[2], sys.argv[3], sys.argv[4])
-        for key, user in db.get_tentative().items():
+        for key, user in db.get_tentative().copy().items():
             print(user)
             print("1. Confirm")
             print("2. Reject")
