@@ -188,6 +188,18 @@ if __name__ == "__main__":
                     print("Keep editing? (y/n)")
                     keep_editing = input()
 
+                print(user)
+                print("1. Confirm")
+                print("2. Reject")
+                print("3. Skip")
+                option = input()
+                if option == "1":
+                    db._confirm(user._name)
+                elif option == "2":
+                    db._reject(user._name)
+                elif option == "3":
+                    pass
+
             elif option == "4":
                 pass
 
