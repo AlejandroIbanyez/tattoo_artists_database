@@ -107,14 +107,17 @@ class Artist():
         self._name = name
         self._followers = followers
         self.ubication = None
-        self.visiting_ubications = []
+        self.visiting_ubications = None
         self.style = None
 
     def update_ubication(self, ubication):
         self.ubication = ubication
 
     def update_visiting_ubications(self, visiting_ubication):
-        self.visiting_ubications += ',' + visiting_ubication
+        if len(self.visiting_ubications) == 0:
+            self.visiting_ubications = visiting_ubication
+        else:
+            self.visiting_ubications += '|' + visiting_ubication
 
     def overwrite_visiting_ubications(self, visiting_ubications):
         self.visiting_ubications = visiting_ubications
