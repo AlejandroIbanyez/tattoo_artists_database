@@ -167,6 +167,7 @@ if __name__ == "__main__":
                         db._edit(user._name, style=new_style)
                     
                     print("Keep editing? (y/n)")
+                    keep_editing = input()
                 
             elif option == "4":
                 pass
