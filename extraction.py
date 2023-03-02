@@ -102,8 +102,8 @@ class Artist():
     def update_ubication(self, ubication):
         self.ubication = ubication
 
-    def update_visiting_ubications(self, visiting_ubications):
-        self.visiting_ubications = visiting_ubications
+    def update_visiting_ubications(self, visiting_ubication):
+        self.visiting_ubications.append(visiting_ubication)
     
     def update_style(self, style):
         self.style = style
