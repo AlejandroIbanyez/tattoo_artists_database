@@ -5,10 +5,11 @@ from instaloader import Instaloader
 
 
 class DataBase():
-    def __init__(self):
+    def __init__(self, hashtag):
         self._tentative = {}
         self._confirmed = {}
         self._rejected = {}
+        self._hashtag = hashtag
 
     def _add(self, data):
         # Add a new element to the tentative list
@@ -43,9 +44,9 @@ class DataBase():
     def get_rejected(self):
         return self._rejected
 
-    def load_to_csv(self):
-        # Load the both dictionaries to csv files
-        with io.open('tentative.csv', 'w') as tentative_file:
+    def load_tentative_to_csv(self, tentative_filename):
+        # Load the tentative dictionary to a csv file
+        with io.open(tentative_filename, 'w') as tentative_file:
             writer = csv.writer(tentative_file, delimiter=';',
                                 quotechar='"', lineterminator='\n')
             writer.writerow(["Name", "Followers", "Ubication",
@@ -54,7 +55,9 @@ class DataBase():
                 writer.writerow(
                     [user._name, user._followers, user.ubication, user.visiting_ubications, user.style])
 
-        with io.open('confirmed.csv', 'w') as confirmed_file:
+    def load_confirmed_to_csv(self, confirmed_filename):
+        # Load the confirmed dictionary to a csv file
+        with io.open(confirmed_filename, 'w') as confirmed_file:
             writer = csv.writer(confirmed_file, delimiter=';',
                                 quotechar='"', lineterminator='\n')
             writer.writerow(["Name", "Followers", "Ubication",
@@ -63,7 +66,9 @@ class DataBase():
                 writer.writerow(
                     [user._name, user._followers, user.ubication, user.visiting_ubications, user.style])
 
-        with io.open('rejected.csv', 'w') as rejected_file:
+    def load_rejected_to_csv(self, rejected_filename):
+        # Load the rejected dictionary to a csv file
+        with io.open(rejected_filename, 'w') as rejected_file:
             writer = csv.writer(rejected_file, delimiter=';',
                                 quotechar='"', lineterminator='\n')
             writer.writerow(["Name", "Followers", "Ubication",
@@ -72,8 +77,8 @@ class DataBase():
                 writer.writerow(
                     [user._name, user._followers, user.ubication, user.visiting_ubications, user.style])
 
-    def load_from_csv(self, tentative_filename, confirmed_filename, rejected_filename):
-        # Load the both dictionaries from csv files
+    def load_tentative_from_csv(self, tentative_filename):
+        # Load the tentative dictionary from a csv file
         with io.open(tentative_filename, 'r') as tentative_file:
             reader = csv.reader(tentative_file, delimiter=';', quotechar='"')
             next(reader)
@@ -83,6 +88,8 @@ class DataBase():
                 self._tentative[row[0]].overwrite_visiting_ubications(row[3])
                 self._tentative[row[0]].update_style(row[4])
 
+    def load_confirmed_from_csv(self, confirmed_filename):
+        # Load the confirmed dictionary from a csv file
         with io.open(confirmed_filename, 'r') as confirmed_file:
             reader = csv.reader(confirmed_file, delimiter=';', quotechar='"')
             next(reader)
@@ -92,6 +99,8 @@ class DataBase():
                 self._confirmed[row[0]].overwrite_visiting_ubications(row[3])
                 self._confirmed[row[0]].update_style(row[4])
 
+    def load_rejected_from_csv(self, rejected_filename):
+        # Load the rejected dictionary from a csv file
         with io.open(rejected_filename, 'r') as rejected_file:
             reader = csv.reader(rejected_file, delimiter=';', quotechar='"')
             next(reader)
@@ -100,6 +109,57 @@ class DataBase():
                 self._rejected[row[0]].update_ubication(row[2])
                 self._rejected[row[0]].overwrite_visiting_ubications(row[3])
                 self._rejected[row[0]].update_style(row[4])
+
+    def get_data(self, tentative_filename, STOP_AT=1000):
+        counter = 0
+        loader = Instaloader()
+        media = loader.get_hashtag_posts(self._hashtag)
+        # Open the tentative.csv file, if it doesn't exist, create it and add a first row with the column names, then add the data to the csv and the list; if not, just add the data to the csv and the list
+        try:
+            with io.open(tentative_filename, 'r') as tentative_file:
+                reader = csv.reader(
+                    tentative_file, delimiter=';', quotechar='"')
+                next(reader)
+                for row in reader:
+                    self._tentative[row[0]] = Artist(row[0], row[1])
+                    self._tentative[row[0]].update_ubication(row[2])
+                    self._tentative[row[0]
+                                    ].overwrite_visiting_ubications(row[3])
+                    self._tentative[row[0]].update_style(row[4])
+
+                for post in media:
+                    if counter == STOP_AT:
+                        break
+
+                    try:
+                        if post.owner_username not in db.get_tentative() and post.owner_username not in db.get_confirmed() and post.owner_username not in db.get_rejected() and post.owner_profile.followers > 1000:
+                            self._tentative[post.owner_username] = Artist(
+                                post.owner_username, post.owner_profile.followers)
+                            writer.writerow(
+                                [post.owner_username, post.owner_profile.followers, None, None, None])
+                            counter += 1
+                    except:
+                        pass
+
+        except FileNotFoundError:
+            with io.open(tentative_filename, 'w') as tentative_file:
+                writer = csv.writer(tentative_file, delimiter=';',
+                                    quotechar='"', lineterminator='\n')
+                writer.writerow(["Name", "Followers", "Ubication",
+                                "Visiting Ubications", "Style"])
+                for post in media:
+                    if counter == STOP_AT:
+                        break
+
+                    try:
+                        if post.owner_username not in db.get_tentative() and post.owner_username not in db.get_confirmed() and post.owner_username not in db.get_rejected() and post.owner_profile.followers > 1000:
+                            self._tentative[post.owner_username] = Artist(
+                                post.owner_username, post.owner_profile.followers)
+                            writer.writerow(
+                                [post.owner_username, post.owner_profile.followers, None, None, None])
+                            counter += 1
+                    except:
+                        pass
 
 
 class Artist():
@@ -117,7 +177,7 @@ class Artist():
         if len(self.visiting_ubications) == 0:
             self.visiting_ubications = visiting_ubication
         else:
-            self.visiting_ubications += '|' + visiting_ubication
+            self.visiting_ubications += ' ' + visiting_ubication
 
     def overwrite_visiting_ubications(self, visiting_ubications):
         self.visiting_ubications = visiting_ubications
@@ -129,33 +189,19 @@ class Artist():
         return f"{self._name} with {self._followers} followers and {self.ubication} as ubication and {self.visiting_ubications} as visiting ubications and {self.style} as style"
 
 
-def get_data(hashtag, db, STOP_AT=1000):
-    counter = 0
-    loader = Instaloader()
-    media = loader.get_hashtag_posts(hashtag)
-    for post in media:
-        try:
-            if counter < STOP_AT and post.owner_username not in db.get_tentative() and post.owner_username not in db.get_confirmed() and post.owner_username not in db.get_rejected() and post.owner_profile.followers > 1000:
-                db._add(Artist(post.owner_username,
-                        post.owner_profile.followers))
-                counter += 1
-        except:
-            pass
-
-
 if __name__ == "__main__":
-    db = DataBase()
+    db = DataBase(sys.argv[2])
     if sys.argv[1] == "get_from_load":
-        db.load_from_csv(sys.argv[3], sys.argv[4], sys.argv[5])
-        get_data(sys.argv[2], db)
-        db.load_to_csv()
+        db.get_data(sys.argv[3])
 
     elif sys.argv[1] == "get_new":
-        get_data(sys.argv[2], db)
-        db.load_to_csv()
+        db.get_data(sys.argv[3])
 
     elif sys.argv[1] == "edit":
-        db.load_from_csv(sys.argv[2], sys.argv[3], sys.argv[4])
+        db.load_tentative_from_csv(sys.argv[2])
+        db.load_confirmed_from_csv(sys.argv[3])
+        db.load_rejected_from_csv(sys.argv[4])
+
         for key in list(db.get_tentative().keys()):
             user = db.get_tentative()[key]
             print(user)
@@ -212,4 +258,6 @@ if __name__ == "__main__":
                 print("Bye :)")
                 break
 
-        db.load_to_csv()
+        db.load_tentative_to_csv(sys.argv[2])
+        db.load_confirmed_to_csv(sys.argv[3])
+        db.load_rejected_to_csv(sys.argv[4])
