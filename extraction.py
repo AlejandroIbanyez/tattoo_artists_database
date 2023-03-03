@@ -196,6 +196,8 @@ if __name__ == "__main__":
 
     elif sys.argv[1] == "get_new":
         db.get_data(sys.argv[3])
+        db.load_confirmed_to_csv(sys.argv[4])
+        db.load_rejected_to_csv(sys.argv[5])
 
     elif sys.argv[1] == "edit":
         db.load_tentative_from_csv(sys.argv[2])
